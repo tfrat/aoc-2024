@@ -41,7 +41,7 @@ fn main() {
     let args: Args = Args::parse();
 
     let input = get_input(&args.day, &args.filename);
-    let day = match get_day(&args.day) {
+    let day = match get_day(&args.day, &args.part) {
         Ok(day) => day,
         Err(message) => {
             println!("{}", message);
