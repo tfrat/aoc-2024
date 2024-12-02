@@ -4,7 +4,7 @@ use std::fmt::Display;
 use std::fs;
 use std::process;
 use clap::{command, Parser};
-use crate::days::Day;
+use crate::days::get_day;
 
 #[derive(clap::ValueEnum, Clone, Eq, PartialEq)]
 enum Part {
@@ -44,10 +44,16 @@ fn main() {
     let args: Args = Args::parse();
 
     let input = get_input(&args.day, &args.filename);
-    let day_one = days::day_1::DayOne::default();
+    let day = match get_day(&args.day) {
+        Ok(day) => day,
+        Err(message) => {
+            println!("{}", message);
+            process::exit(1)
+        }
+    };
     let answer: Box<dyn Display> = match &args.part {
-        &Part::PartOne => Box::new(day_one.part_one(&input)),
-        &Part::PartTwo => Box::new(day_one.part_two(&input)),
+        &Part::PartOne => Box::new(day.part_one(&input)),
+        &Part::PartTwo => Box::new(day.part_two(&input)),
     };
     println!("{}", answer)
 }
