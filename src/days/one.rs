@@ -19,7 +19,7 @@ impl DayOne {
 }
 
 impl Day for DayOne {
-    fn part_one(&self, input: &str) -> impl Display {
+    fn part_one(&self, input: &str) -> Box<dyn Display> {
         let (mut left, mut right) = DayOne::number_lists(input);
         left.sort();
         right.sort();
@@ -27,9 +27,10 @@ impl Day for DayOne {
         for (left_item, right_item) in left.into_iter().zip(right.into_iter()) {
             sum += (left_item - right_item).abs()
         }
-        sum    }
+        Box::new(sum)
+    }
 
-    fn part_two(&self, input: &str) -> impl Display {
+    fn part_two(&self, input: &str) -> Box<dyn Display> {
         let (left, right) = DayOne::number_lists(input);
         let mut similarity_score = 0;
         let mut right_count: HashMap<i32, i32> = HashMap::new();
@@ -41,5 +42,6 @@ impl Day for DayOne {
             let count = *right_count.get(&left_item).get_or_insert(&0);
             similarity_score += left_item * count;
         }
-        similarity_score    }
+        Box::new(similarity_score)
+    }
 }
