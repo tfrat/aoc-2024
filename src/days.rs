@@ -2,6 +2,7 @@ use std::fmt::Display;
 use crate::days;
 
 pub mod one;
+mod two;
 
 pub trait Day {
     fn part_one(&self, input: &str) -> Box<dyn Display>;
