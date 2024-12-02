@@ -1,5 +1,4 @@
 use std::fmt::Display;
-use crate::days;
 
 pub mod one;
 mod two;
@@ -11,7 +10,8 @@ pub trait Day {
 
 pub fn get_day(day: &u8) -> Result<Box<dyn Day>, String> {
     match day {
-        1 => Ok(Box::new(days::one::DayOne::default())),
+        1 => Ok(Box::new(one::DayOne::default())),
+        2 => Ok(Box::new(two::DayTwo::default())),
         _ => Err(format!("Day {} not supported.", day))
     }
 }
