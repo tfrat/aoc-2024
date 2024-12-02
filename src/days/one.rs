@@ -1,9 +1,9 @@
+use crate::days::Day;
 use std::collections::HashMap;
 use std::fmt::Display;
-use crate::days::Day;
 
 #[derive(Default)]
-pub struct DayOne { }
+pub struct DayOne {}
 impl DayOne {
     fn number_lists(input: &str) -> (Vec<i32>, Vec<i32>) {
         let lines: Vec<&str> = input.lines().collect();

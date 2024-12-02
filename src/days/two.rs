@@ -1,10 +1,8 @@
-use std::fmt::Display;
 use crate::days::Day;
+use std::fmt::Display;
 
 #[derive(Default)]
-pub struct DayTwo {
-
-}
+pub struct DayTwo {}
 
 impl DayTwo {
     fn parse_reports(input: &str) -> Vec<Vec<u32>> {
@@ -12,42 +10,95 @@ impl DayTwo {
         for line in input.lines() {
             let report: Vec<u32> = line
                 .split_whitespace()
-                .map(|num| num.parse().expect(format!("Found a non-number {}", num).as_str()))
+                .map(|num| {
+                    num.parse()
+                        .unwrap_or_else(|_| panic!("Found a non-number {}", num))
+                })
                 .collect();
             reports.push(report)
         }
         reports
     }
 
+    fn are_levels_safe(first: &i32, second: &i32, direction: &i32) -> bool {
+        let diff = second - first;
+        (diff.abs() < 1 || diff.abs() > 3)
+            || (diff < 0 && *direction > 0)
+            || (diff > 0 && *direction < 0)
+    }
 
-    fn is_report_safe(report: &Vec<u32>, dampener: &u32) -> bool {
-        if report.len() < 2 {
-            return true
+    fn is_report_safe_recurs(
+        report: &[u32],
+        dampener: &u32,
+        first_index: &usize,
+        second_index: &usize,
+        direction: &i32,
+        bad_levels: &u32,
+    ) -> bool {
+        if *first_index == *second_index {
+            return false;
         }
-        let mut bad_levels: u32 = 0;
-        let mut index: usize = 0;
-        let mut next_index: usize = index + 1;
-        let mut direction = 0;
-        while next_index < report.len() {
-            let first = report[index] as i32;
-            let next = report[next_index] as i32;
-            let diff: i32 = next - first;
-            if direction == 0 {
-                direction = diff;
-            }
-            if (diff.abs() < 1 || diff.abs() > 3) ||
-                (diff < 0 && direction > 0) ||
-                (diff > 0 && direction < 0) {
-                bad_levels += 1;
-                if bad_levels > *dampener {
-                    return false
-                }
-            } else {
-                index = next_index;
-            }
-            next_index += 1;
+        if *bad_levels > *dampener {
+            return false;
         }
-        true
+        if *first_index >= report.len() || *second_index >= report.len() {
+            return true;
+        }
+        let level = report[*first_index] as i32;
+        let next_level = report[*second_index] as i32;
+        let diff = next_level - level;
+        if *direction == 0 {
+            return DayTwo::is_report_safe_recurs(
+                report,
+                dampener,
+                first_index,
+                second_index,
+                &diff,
+                bad_levels,
+            );
+        }
+
+        if DayTwo::are_levels_safe(&level, &next_level, direction) {
+            let new_bad_levels = *bad_levels + 1;
+            return (*first_index > 0
+                && DayTwo::is_report_safe_recurs(
+                    report,
+                    dampener,
+                    &(*first_index - 1),
+                    second_index,
+                    direction,
+                    &new_bad_levels,
+                ))
+                || DayTwo::is_report_safe_recurs(
+                    report,
+                    dampener,
+                    first_index,
+                    &(*second_index + 1),
+                    direction,
+                    &new_bad_levels,
+                )
+                || (*first_index == 0
+                    && DayTwo::is_report_safe_recurs(
+                        report,
+                        dampener,
+                        &(*first_index + 1),
+                        &(*second_index + 1),
+                        &0,
+                        &new_bad_levels,
+                    ));
+        }
+        DayTwo::is_report_safe_recurs(
+            report,
+            dampener,
+            &(*first_index + 1),
+            &(*second_index + 1),
+            direction,
+            bad_levels,
+        )
+    }
+
+    fn is_report_safe(report: &[u32], dampener: &u32) -> bool {
+        DayTwo::is_report_safe_recurs(report, dampener, &0, &1, &0, &0)
     }
 }
 
@@ -101,6 +152,7 @@ mod tests {
             (vec![1, 3, 2, 4, 5], true),
             (vec![8, 6, 4, 4, 1], true),
             (vec![1, 3, 6, 7, 9], true),
+            (vec![7, 2, 4, 7, 9], true),
         ];
         for (report, expected) in cases {
             let readable: String = report
@@ -110,7 +162,9 @@ mod tests {
                 .join(", ");
             assert_eq!(
                 DayTwo::is_report_safe(&report, &1),
-                expected, "{}", readable
+                expected,
+                "{}",
+                readable
             );
         }
     }
