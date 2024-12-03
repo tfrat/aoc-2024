@@ -2,6 +2,7 @@ use crate::Part;
 use std::fmt::Display;
 
 pub mod one;
+mod three;
 mod two;
 
 pub trait Day {
@@ -17,6 +18,7 @@ pub fn get_day(day: &u8, part: &Part) -> Result<Box<dyn Day>, String> {
             ..Default::default()
         })),
         (2, Part::PartTwo) => Ok(Box::new(two::DayTwo::default())),
+        (3, _) => Ok(Box::new(three::DayThree::default())),
         _ => Err(format!("Day {} not supported.", day)),
     }
 }
