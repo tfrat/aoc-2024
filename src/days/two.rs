@@ -1,17 +1,18 @@
 use crate::days::Day;
+use std::cmp::min;
 use std::fmt::Display;
 
 pub struct DayTwo {
     pub min_step: i32,
     pub max_step: i32,
-    pub dampener: u32,
+    pub enable_dampener: bool,
 }
 
 impl DayTwo {
-    fn parse_reports(input: &str) -> Vec<Vec<u32>> {
-        let mut reports: Vec<Vec<u32>> = Vec::new();
+    fn parse_reports(input: &str) -> Vec<Vec<i32>> {
+        let mut reports: Vec<Vec<i32>> = Vec::new();
         for line in input.lines() {
-            let report: Vec<u32> = line
+            let report: Vec<i32> = line
                 .split_whitespace()
                 .map(|num| {
                     num.parse()
@@ -23,80 +24,47 @@ impl DayTwo {
         reports
     }
 
-    fn are_levels_safe(&self, first: &i32, second: &i32, direction: &i32) -> bool {
-        let diff = second - first;
-        (diff.abs() < self.min_step || diff.abs() > self.max_step)
-            || (diff < 0 && *direction > 0)
-            || (diff > 0 && *direction < 0)
+    fn check_report(&self, report: &[i32]) -> bool {
+        let out_of_bounds = report
+            .windows(2)
+            .filter(|window| {
+                (window[1] - window[0]).abs() < self.min_step
+                    || (window[1] - window[0]).abs() > self.max_step
+            })
+            .count();
+        let sorted: &mut Vec<i32> = &mut report.to_vec();
+        sorted.sort();
+        let reverse_sorted: &mut Vec<i32> = &mut report.to_vec();
+        reverse_sorted.sort_by_key(|&x| std::cmp::Reverse(x));
+
+        let count = report.iter().zip(sorted).filter(|(x, y)| x != y).count();
+        let reverse_count = report
+            .iter()
+            .zip(reverse_sorted)
+            .filter(|(x, y)| x != y)
+            .count();
+
+        out_of_bounds + min(count, reverse_count) == 0
     }
 
-    fn is_report_safe_recurs(
-        &self,
-        report: &[u32],
-        first_index: &usize,
-        second_index: &usize,
-        direction: &i32,
-        bad_levels: &u32,
-    ) -> bool {
-        if *first_index == *second_index {
-            return false;
-        }
-        if *bad_levels > self.dampener {
-            return false;
-        }
-        if *first_index >= report.len() || *second_index >= report.len() {
+    fn is_report_safe(&self, report: &[i32]) -> bool {
+        if self.check_report(report) {
             return true;
         }
-        let level = report[*first_index] as i32;
-        let next_level = report[*second_index] as i32;
-        let diff = next_level - level;
-        if *direction == 0 {
-            return self.is_report_safe_recurs(
-                report,
-                first_index,
-                second_index,
-                &diff,
-                bad_levels,
-            );
+        if self.enable_dampener {
+            for i in 0..report.len() {
+                let vec: Vec<i32> = report[0..i]
+                    .iter()
+                    .chain(&report[i + 1..])
+                    .copied()
+                    .collect();
+                if self.check_report(&vec) {
+                    return true;
+                }
+            }
         }
 
-        if self.are_levels_safe(&level, &next_level, direction) {
-            let new_bad_levels = *bad_levels + 1;
-            return (*first_index > 0
-                && self.is_report_safe_recurs(
-                    report,
-                    &(*first_index - 1),
-                    second_index,
-                    direction,
-                    &new_bad_levels,
-                ))
-                || self.is_report_safe_recurs(
-                    report,
-                    first_index,
-                    &(*second_index + 1),
-                    direction,
-                    &new_bad_levels,
-                )
-                || (*first_index == 0
-                    && self.is_report_safe_recurs(
-                        report,
-                        &(*first_index + 1),
-                        &(*second_index + 1),
-                        &0,
-                        &new_bad_levels,
-                    ));
-        }
-        self.is_report_safe_recurs(
-            report,
-            &(*first_index + 1),
-            &(*second_index + 1),
-            direction,
-            bad_levels,
-        )
-    }
-
-    fn is_report_safe(&self, report: &[u32]) -> bool {
-        self.is_report_safe_recurs(report, &0, &1, &0, &0)
+        false
     }
 }
 
@@ -105,7 +73,7 @@ impl Default for DayTwo {
         Self {
             min_step: 1,
             max_step: 3,
-            dampener: 1,
+            enable_dampener: true,
         }
     }
 }
@@ -139,7 +107,7 @@ mod tests {
     #[test]
     fn test_example_part_one() {
         let day = DayTwo {
-            dampener: 0,
+            enable_dampener: false,
             ..Default::default()
         };
 
@@ -167,6 +135,9 @@ mod tests {
             (vec![8, 6, 4, 4, 1], true),
             (vec![1, 3, 6, 7, 9], true),
             (vec![7, 2, 4, 7, 9], true),
+            (vec![1, 4, 3, 4, 5], true),
+            (vec![2, 2, 4, 5, 7, 9], true),
+            (vec![43, 40, 41, 44, 45, 46, 48, 51], true),
         ];
         for (report, expected) in cases {
             let readable: String = report
