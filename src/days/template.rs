@@ -1,5 +1,4 @@
 use crate::days::Day;
-use std::fmt::Display;
 
 #[derive(Default)]
 pub struct DayXXXX {}
@@ -7,12 +6,12 @@ pub struct DayXXXX {}
 impl DayXXXX {}
 
 impl Day for DayXXXX {
-    fn part_one(&self, input: &str) -> Box<dyn Display> {
-        Box::new(input)
+    fn part_one(&self, input: &str) -> String {
+        input.to_string()
     }
 
-    fn part_two(&self, input: &str) -> Box<dyn Display> {
-        Box::new(input)
+    fn part_two(&self, input: &str) -> String {
+        input.to_string()
     }
 }
 
@@ -23,10 +22,18 @@ pub mod test {
     #[test]
     fn test_part_one() {
         let day = DayXXXX::default();
+        let cases = vec![("", 0)];
+        for (input, expected) in cases {
+            assert_eq!(day.part_one(input), expected.to_string())
+        }
     }
 
     #[test]
     fn test_part_two() {
         let day = DayXXXX::default();
+        let cases = vec![("", 0)];
+        for (input, expected) in cases {
+            assert_eq!(day.part_two(input), expected.to_string())
+        }
     }
 }

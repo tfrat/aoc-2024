@@ -1,6 +1,5 @@
 use crate::days::Day;
 use regex::Regex;
-use std::fmt::Display;
 
 #[derive(Default)]
 pub struct DayThree {}
@@ -36,38 +35,36 @@ impl DayThree {
 }
 
 impl Day for DayThree {
-    fn part_one(&self, input: &str) -> Box<dyn Display> {
-        Box::new(DayThree::execute_instructions(input, false))
+    fn part_one(&self, input: &str) -> String {
+        DayThree::execute_instructions(input, false).to_string()
     }
 
-    fn part_two(&self, input: &str) -> Box<dyn Display> {
-        Box::new(DayThree::execute_instructions(input, true))
+    fn part_two(&self, input: &str) -> String {
+        DayThree::execute_instructions(input, true).to_string()
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use crate::days::three::DayThree;
+    use super::*;
 
     #[test]
     fn test_part_one() {
         assert_eq!(
-            DayThree::execute_instructions(
-                "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))",
-                false
-            ) as u32,
-            161
+            DayThree::default().part_one(
+                "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+            ),
+            161.to_string()
         )
     }
 
     #[test]
     fn test_part_two() {
         assert_eq!(
-            DayThree::execute_instructions(
+            DayThree::default().part_two(
                 "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))",
-                true
             ),
-            48
+            48.to_string()
         )
     }
 }

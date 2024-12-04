@@ -1,6 +1,5 @@
 use crate::days::Day;
 use std::cmp::min;
-use std::fmt::Display;
 
 pub struct DayTwo {
     pub min_step: i32,
@@ -79,7 +78,7 @@ impl Default for DayTwo {
 }
 
 impl Day for DayTwo {
-    fn part_one(&self, input: &str) -> Box<dyn Display> {
+    fn part_one(&self, input: &str) -> String {
         let reports = DayTwo::parse_reports(input);
         let count = reports
             .iter()
@@ -87,17 +86,17 @@ impl Day for DayTwo {
             .filter(|is_safe| *is_safe)
             .count();
 
-        Box::new(count)
+        count.to_string()
     }
 
-    fn part_two(&self, input: &str) -> Box<dyn Display> {
+    fn part_two(&self, input: &str) -> String {
         let reports = DayTwo::parse_reports(input);
         let count = reports
             .iter()
             .map(|report| self.is_report_safe(report))
             .filter(|is_safe| *is_safe)
             .count();
-        Box::new(count)
+        count.to_string()
     }
 }
 
