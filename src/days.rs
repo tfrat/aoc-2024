@@ -1,5 +1,6 @@
 use crate::Part;
 
+mod five;
 mod four;
 pub mod one;
 mod three;
@@ -20,6 +21,7 @@ pub fn get_day(day: &u8, part: &Part) -> Result<Box<dyn Day>, String> {
         (2, Part::PartTwo) => Ok(Box::new(two::DayTwo::default())),
         (3, _) => Ok(Box::new(three::DayThree::default())),
         (4, _) => Ok(Box::new(four::DayFour::default())),
+        (5, _) => Ok(Box::new(five::DayFive::default())),
         _ => Err(format!("Day {} not supported.", day)),
     }
 }
