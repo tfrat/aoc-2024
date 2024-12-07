@@ -115,9 +115,19 @@ impl DaySix {
         let mut next_pos = guard_pos.step(directions[direction]);
         while let Some(place) = grid.get_pos(&next_pos) {
             match place {
-                '#' => direction = (direction + 1) % directions.len(),
+                '#' | '0' => direction = (direction + 1) % directions.len(),
                 _ if positions.contains(&(guard_pos.clone(), directions[direction])) => {
-                    return None
+                    let mut foo = Grid {
+                        grid: grid.grid.clone(),
+                        width: grid.width,
+                        height: grid.height,
+                        starting_pos: grid.starting_pos.clone(),
+                    };
+                    for (pos, letter) in positions {
+                        foo.set(&pos, letter);
+                    }
+                    println!("{}\n--------------\n", foo.print());
+                    return None;
                 }
                 _ => {
                     positions.insert((guard_pos.clone(), directions[direction]));
@@ -153,7 +163,7 @@ impl DaySix {
                     height: grid.height,
                     width: grid.width,
                 };
-                new_grid.set(&next_pos, '#');
+                new_grid.set(&next_pos, '0');
                 new_grid.set(&grid.starting_pos, '.');
                 new_grid.set(&guard_pos, directions[direction]);
                 let new_obs_pos = next_pos.clone();
