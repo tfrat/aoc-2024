@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
+use std::thread;
 use crate::days::Day;
 
 
@@ -125,13 +126,13 @@ impl DaySix {
     }
 
     fn find_obstruction_count(grid: &Grid) -> u32 {
-        let mut obstruction_positions: HashSet<Coord> = HashSet::new();
         let mut guard_pos = grid.starting_pos.clone();
         let directions = ['^', '>', 'v', '<'];
         let mut direction = directions.iter().position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap()).unwrap();
         let mut next_pos = guard_pos.step(directions[direction]);
+        let mut handles = vec![];
         while let Some(place) = grid.get_pos(&next_pos) {
-            if !obstruction_positions.contains(&next_pos) && place != &'#'  {
+            if place != &'#'  {
                 let mut new_grid = Grid {
                     starting_pos: guard_pos.clone(),
                     grid: grid.grid.clone(),
@@ -141,10 +142,12 @@ impl DaySix {
                 new_grid.set(&next_pos, '#');
                 new_grid.set(&grid.starting_pos, '.');
                 new_grid.set(&guard_pos, directions[direction]);
-                match Self::count_guard_steps(&new_grid) {
-                    Some(_) => (),
-                    None => {obstruction_positions.insert(next_pos.clone()); ()},
-                };
+                let new_obs_pos = next_pos.clone();
+                handles.push(thread::spawn(move || match Self::count_guard_steps(&new_grid) {
+                    Some(_) => None,
+                    None => Some(new_obs_pos),
+                }))
+                ;
             }
 
             match place {
@@ -154,8 +157,13 @@ impl DaySix {
             next_pos = guard_pos.step(directions[direction])
         }
 
-
-        obstruction_positions.len() as u32
+        handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .filter(|coord| !coord.is_none())
+            .map(|coord| coord.unwrap())
+            .collect::<HashSet<Coord>>()
+            .len() as u32
     }
  }
 
