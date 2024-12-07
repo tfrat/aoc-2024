@@ -115,11 +115,6 @@ impl DaySix {
             .position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap())?;
         let mut next_pos = guard_pos.step(directions[direction]);
         while let Some(place) = grid.get_pos(&next_pos) {
-            // let mut foo = grid.clone();
-            // for (pos, letter) in &positions {
-            //     foo.set(&pos, *letter);
-            // }
-            // draw_frame(&foo.print_around(guard_pos.x, guard_pos.y, 15), Some(50));
             match place {
                 '#' | '0' => direction = (direction + 1) % directions.len(),
                 _ if positions.contains(&(guard_pos.clone(), directions[direction])) => {
@@ -155,8 +150,6 @@ impl DaySix {
             if place != &'#' {
                 let mut new_grid = grid.clone();
                 new_grid.set(&next_pos, '0');
-                new_grid.set(&grid.starting_pos, '.');
-                new_grid.set(&guard_pos, directions[direction]);
                 let new_obs_pos = next_pos.clone();
                 handles.push(thread::spawn(move || {
                     match Self::count_guard_steps(&new_grid) {
@@ -190,7 +183,6 @@ impl Day for DaySix {
     }
 
     fn part_two(&self, input: &str) -> String {
-        // 1819, 1820 too high
         let grid = Grid::new(input);
         DaySix::find_obstruction_count(&grid).to_string()
     }
