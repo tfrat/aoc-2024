@@ -18,22 +18,31 @@ impl DaySeven {
             .collect()
     }
 
-    fn find_solvable_sum(operators: &Vec<char>, result: &u64, numbers: &[u64], progress: &u64) -> u64 {
+    fn find_solvable_sum(
+        operators: &Vec<char>,
+        result: &u64,
+        numbers: &[u64],
+        progress: &u64,
+    ) -> u64 {
         if progress == result {
-            return *result
+            return *result;
         }
-        if numbers.len() == 0 {
-            return 0
+        if numbers.is_empty() {
+            return 0;
         }
-        operators.iter().map(|operator| {
-            let next_progress = match operator {
-                '*' => progress * numbers[0],
-                '+' => progress + numbers[0],
-                '|' => format!("{progress}{}", numbers[0]).parse().unwrap(),
-                _ => 0,
-            };
-            Self::find_solvable_sum(operators, result, &numbers[1..], &next_progress)
-        }).filter(|result| *result > 0u64).next().unwrap_or(0)
+        operators
+            .iter()
+            .map(|operator| {
+                let next_progress = match operator {
+                    '*' => progress * numbers[0],
+                    '+' => progress + numbers[0],
+                    '|' => format!("{progress}{}", numbers[0]).parse().unwrap(),
+                    _ => 0,
+                };
+                Self::find_solvable_sum(operators, result, &numbers[1..], &next_progress)
+            })
+            .find(|result| *result > 0)
+            .unwrap_or(0)
     }
 }
 
@@ -43,7 +52,15 @@ impl Day for DaySeven {
         problems
             .iter()
             .map(|(result, numbers)| {
-                (result, DaySeven::find_solvable_sum(&vec!['*', '+'], result, &numbers[1..], &numbers[0]))
+                (
+                    result,
+                    DaySeven::find_solvable_sum(
+                        &vec!['*', '+'],
+                        result,
+                        &numbers[1..],
+                        &numbers[0],
+                    ),
+                )
             })
             .filter(|(_, answer)| *answer > 0)
             .map(|(result, _)| result)
@@ -56,7 +73,15 @@ impl Day for DaySeven {
         problems
             .iter()
             .map(|(result, numbers)| {
-                (result, DaySeven::find_solvable_sum(&vec!['*', '+', '|'], result, &numbers[1..], &numbers[0]))
+                (
+                    result,
+                    DaySeven::find_solvable_sum(
+                        &vec!['*', '+', '|'],
+                        result,
+                        &numbers[1..],
+                        &numbers[0],
+                    ),
+                )
             })
             .filter(|(_, answer)| *answer > 0)
             .map(|(result, _)| result)
@@ -103,7 +128,8 @@ pub mod test {
 21037: 9 7 18 13
 292: 11 6 16 20"#,
             11387,
-        )];        for (input, expected) in cases {
+        )];
+        for (input, expected) in cases {
             assert_eq!(day.part_two(input), expected.to_string())
         }
     }

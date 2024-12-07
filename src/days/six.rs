@@ -131,7 +131,7 @@ impl DaySix {
         Some(
             positions
                 .iter()
-                .map(|pos| (*pos).0.clone())
+                .map(|pos| pos.0.clone())
                 .collect::<HashSet<Coord>>()
                 .len() as u32,
         )
