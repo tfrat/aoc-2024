@@ -7,6 +7,7 @@ mod seven;
 mod six;
 mod three;
 mod two;
+mod eight;
 
 pub trait Day {
     fn part_one(&self, input: &str) -> String;
@@ -26,6 +27,7 @@ pub fn get_day(day: &u8, part: &Part) -> Result<Box<dyn Day>, String> {
         (5, _) => Ok(Box::new(five::DayFive::default())),
         (6, _) => Ok(Box::new(six::DaySix::default())),
         (7, _) => Ok(Box::new(seven::DaySeven::default())),
+        (8, _) => Ok(Box::new(eight::DayEight::default())),
         _ => Err(format!("Day {} not supported.", day)),
     }
 }
