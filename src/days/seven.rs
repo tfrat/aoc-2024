@@ -26,12 +26,13 @@ impl DaySeven {
             return 0
         }
         operators.iter().map(|operator| {
-            match operator {
-                '*' => Self::find_solvable_sum(operators, result, &numbers[1..], &(progress * numbers[0])),
-                '+' => Self::find_solvable_sum(operators, result, &numbers[1..], &(progress + numbers[0])),
-                '|' => Self::find_solvable_sum(operators, result, &numbers[1..], &(format!("{progress}{}", numbers[0]).parse().unwrap())),
+            let next_progress = match operator {
+                '*' => progress * numbers[0],
+                '+' => progress + numbers[0],
+                '|' => format!("{progress}{}", numbers[0]).parse().unwrap(),
                 _ => 0,
-            }
+            };
+            Self::find_solvable_sum(operators, result, &numbers[1..], &next_progress)
         }).filter(|result| *result > 0u64).next().unwrap_or(0)
     }
 }
