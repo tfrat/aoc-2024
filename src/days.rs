@@ -3,9 +3,9 @@ use crate::Part;
 mod five;
 mod four;
 pub mod one;
+mod six;
 mod three;
 mod two;
-mod six;
 
 pub trait Day {
     fn part_one(&self, input: &str) -> String;

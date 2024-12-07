@@ -1,8 +1,7 @@
+use crate::days::Day;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::thread;
-use crate::days::Day;
-
 
 #[derive(Eq, Hash, PartialEq, Clone)]
 struct Coord {
@@ -11,13 +10,16 @@ struct Coord {
 }
 
 impl Coord {
-    fn new(coords : (i32, i32)) -> Coord {
-        Coord{x: coords.0, y: coords.1}
+    fn new(coords: (i32, i32)) -> Coord {
+        Coord {
+            x: coords.0,
+            y: coords.1,
+        }
     }
 
     fn step(&self, direction: char) -> Coord {
         match direction {
-            '^' => Coord::new((self.x , self.y - 1)),
+            '^' => Coord::new((self.x, self.y - 1)),
             '>' => Coord::new((self.x + 1, self.y)),
             'v' => Coord::new((self.x, self.y + 1)),
             '<' => Coord::new((self.x - 1, self.y)),
@@ -36,7 +38,7 @@ struct Grid {
     grid: HashMap<(i32, i32), char>,
     width: u32,
     height: u32,
-    starting_pos: Coord
+    starting_pos: Coord,
 }
 
 impl Grid {
@@ -58,7 +60,7 @@ impl Grid {
             grid,
             height,
             width,
-            starting_pos: Coord::new(starting_pos.unwrap())
+            starting_pos: Coord::new(starting_pos.unwrap()),
         }
     }
 
@@ -99,7 +101,6 @@ impl Grid {
     }
 }
 
-
 #[derive(Default)]
 pub struct DaySix {}
 
@@ -108,12 +109,16 @@ impl DaySix {
         let mut guard_pos = grid.starting_pos.clone();
         let mut positions: HashSet<(Coord, char)> = HashSet::new();
         let directions = ['^', '>', 'v', '<'];
-        let mut direction = directions.iter().position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap()).unwrap();
+        let mut direction = directions
+            .iter()
+            .position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap())?;
         let mut next_pos = guard_pos.step(directions[direction]);
         while let Some(place) = grid.get_pos(&next_pos) {
             match place {
                 '#' => direction = (direction + 1) % directions.len(),
-                _ if positions.contains(&(guard_pos.clone(), directions[direction])) => return None,
+                _ if positions.contains(&(guard_pos.clone(), directions[direction])) => {
+                    return None
+                }
                 _ => {
                     positions.insert((guard_pos.clone(), directions[direction]));
                     guard_pos = next_pos.clone()
@@ -122,17 +127,26 @@ impl DaySix {
             next_pos = guard_pos.step(directions[direction])
         }
         positions.insert((guard_pos, directions[direction]));
-        Some(positions.iter().map(|pos| (*pos).0.clone()).collect::<HashSet<Coord>>().len() as u32)
+        Some(
+            positions
+                .iter()
+                .map(|pos| (*pos).0.clone())
+                .collect::<HashSet<Coord>>()
+                .len() as u32,
+        )
     }
 
     fn find_obstruction_count(grid: &Grid) -> u32 {
         let mut guard_pos = grid.starting_pos.clone();
         let directions = ['^', '>', 'v', '<'];
-        let mut direction = directions.iter().position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap()).unwrap();
+        let mut direction = directions
+            .iter()
+            .position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap())
+            .unwrap();
         let mut next_pos = guard_pos.step(directions[direction]);
         let mut handles = vec![];
         while let Some(place) = grid.get_pos(&next_pos) {
-            if place != &'#'  {
+            if place != &'#' {
                 let mut new_grid = Grid {
                     starting_pos: guard_pos.clone(),
                     grid: grid.grid.clone(),
@@ -143,16 +157,17 @@ impl DaySix {
                 new_grid.set(&grid.starting_pos, '.');
                 new_grid.set(&guard_pos, directions[direction]);
                 let new_obs_pos = next_pos.clone();
-                handles.push(thread::spawn(move || match Self::count_guard_steps(&new_grid) {
-                    Some(_) => None,
-                    None => Some(new_obs_pos),
-                }))
-                ;
+                handles.push(thread::spawn(move || {
+                    match Self::count_guard_steps(&new_grid) {
+                        Some(_) => None,
+                        None => Some(new_obs_pos),
+                    }
+                }));
             }
 
             match place {
                 '#' => direction = (direction + 1) % directions.len(),
-                _ => guard_pos = next_pos.clone()
+                _ => guard_pos = next_pos.clone(),
             }
             next_pos = guard_pos.step(directions[direction])
         }
@@ -165,7 +180,7 @@ impl DaySix {
             .collect::<HashSet<Coord>>()
             .len() as u32
     }
- }
+}
 
 impl Day for DaySix {
     fn part_one(&self, input: &str) -> String {
@@ -187,7 +202,8 @@ pub mod test {
     #[test]
     fn test_part_one() {
         let day = DaySix::default();
-        let cases = vec![(r#"....#.....
+        let cases = vec![(
+            r#"....#.....
 .........#
 ..........
 ..#.......
@@ -196,7 +212,9 @@ pub mod test {
 .#..^.....
 ........#.
 #.........
-......#..."#, 41)];
+......#..."#,
+            41,
+        )];
         for (input, expected) in cases {
             assert_eq!(day.part_one(input), expected.to_string())
         }
@@ -205,7 +223,8 @@ pub mod test {
     #[test]
     fn test_part_two() {
         let day = DaySix::default();
-        let cases = vec![(r#"....#.....
+        let cases = vec![(
+            r#"....#.....
 .........#
 ..........
 ..#.......
@@ -214,7 +233,9 @@ pub mod test {
 .#..^.....
 ........#.
 #.........
-......#..."#, 6)];
+......#..."#,
+            6,
+        )];
         for (input, expected) in cases {
             assert_eq!(day.part_two(input), expected.to_string())
         }
