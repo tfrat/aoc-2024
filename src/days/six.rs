@@ -2,9 +2,6 @@ use crate::days::Day;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::thread;
-use std::thread::sleep;
-use std::time::Duration;
-use crate::utils::draw_frame;
 
 #[derive(Eq, Hash, PartialEq, Clone)]
 struct Coord {
