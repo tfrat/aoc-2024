@@ -33,9 +33,9 @@ impl Display for Coord {
 
 struct Grid {
     grid: HashMap<(i32, i32), char>,
-    pub width: u32,
-    pub height: u32,
-    pub starting_pos: Coord
+    width: u32,
+    height: u32,
+    starting_pos: Coord
 }
 
 impl Grid {
@@ -65,6 +65,10 @@ impl Grid {
         self.grid.get(&(x, y))
     }
 
+    fn set(&mut self, coord: &Coord, letter: char) {
+        self.grid.insert((coord.x, coord.y), letter);
+    }
+
     fn get_pos(&self, coord: &Coord) -> Option<&char> {
         self.get(coord.x, coord.y)
     }
@@ -72,9 +76,9 @@ impl Grid {
     #[allow(dead_code)]
     fn print(&self) -> String {
         (0..self.width)
-            .map(|x| {
+            .map(|y| {
                 let line = (0..self.height)
-                    .map(|y| self.get(x as i32, y as i32).unwrap_or(&' '))
+                    .map(|x| self.get(x as i32, y as i32).unwrap_or(&' '))
                     .collect::<String>();
                 line + "\n"
             })
@@ -106,20 +110,54 @@ impl DaySix {
         let mut direction = directions.iter().position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap()).unwrap();
         let mut next_pos = guard_pos.step(directions[direction]);
         while let Some(place) = grid.get_pos(&next_pos) {
-            if positions.contains(&(guard_pos.clone(), directions[direction])) {
-                return None
-            }
-            positions.insert((guard_pos.clone(), directions[direction]));
             match place {
                 '#' => direction = (direction + 1) % directions.len(),
-                _ => guard_pos = next_pos.clone()
+                _ if positions.contains(&(guard_pos.clone(), directions[direction])) => return None,
+                _ => {
+                    positions.insert((guard_pos.clone(), directions[direction]));
+                    guard_pos = next_pos.clone()
+                }
             }
             next_pos = guard_pos.step(directions[direction])
         }
         positions.insert((guard_pos, directions[direction]));
         Some(positions.iter().map(|pos| (*pos).0.clone()).collect::<HashSet<Coord>>().len() as u32)
     }
-}
+
+    fn find_obstruction_count(grid: &Grid) -> u32 {
+        let mut obstruction_positions: HashSet<Coord> = HashSet::new();
+        let mut guard_pos = grid.starting_pos.clone();
+        let directions = ['^', '>', 'v', '<'];
+        let mut direction = directions.iter().position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap()).unwrap();
+        let mut next_pos = guard_pos.step(directions[direction]);
+        while let Some(place) = grid.get_pos(&next_pos) {
+            if !obstruction_positions.contains(&next_pos) && place != &'#'  {
+                let mut new_grid = Grid {
+                    starting_pos: guard_pos.clone(),
+                    grid: grid.grid.clone(),
+                    height: grid.height,
+                    width: grid.width,
+                };
+                new_grid.set(&next_pos, '#');
+                new_grid.set(&grid.starting_pos, '.');
+                new_grid.set(&guard_pos, directions[direction]);
+                match Self::count_guard_steps(&new_grid) {
+                    Some(_) => (),
+                    None => {obstruction_positions.insert(next_pos.clone()); ()},
+                };
+            }
+
+            match place {
+                '#' => direction = (direction + 1) % directions.len(),
+                _ => guard_pos = next_pos.clone()
+            }
+            next_pos = guard_pos.step(directions[direction])
+        }
+
+
+        obstruction_positions.len() as u32
+    }
+ }
 
 impl Day for DaySix {
     fn part_one(&self, input: &str) -> String {
@@ -128,7 +166,9 @@ impl Day for DaySix {
     }
 
     fn part_two(&self, input: &str) -> String {
-        input.to_string()
+        // 1819, 1820 too high
+        let grid = Grid::new(input);
+        DaySix::find_obstruction_count(&grid).to_string()
     }
 }
 
