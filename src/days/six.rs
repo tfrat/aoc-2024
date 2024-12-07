@@ -99,29 +99,32 @@ impl Grid {
 pub struct DaySix {}
 
 impl DaySix {
-    fn count_guard_steps(grid: &Grid) -> u32 {
+    fn count_guard_steps(grid: &Grid) -> Option<u32> {
         let mut guard_pos = grid.starting_pos.clone();
-        let mut positions: HashSet<Coord> = HashSet::new();
+        let mut positions: HashSet<(Coord, char)> = HashSet::new();
         let directions = ['^', '>', 'v', '<'];
         let mut direction = directions.iter().position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap()).unwrap();
         let mut next_pos = guard_pos.step(directions[direction]);
         while let Some(place) = grid.get_pos(&next_pos) {
-            positions.insert(guard_pos.clone());
+            if positions.contains(&(guard_pos.clone(), directions[direction])) {
+                return None
+            }
+            positions.insert((guard_pos.clone(), directions[direction]));
             match place {
                 '#' => direction = (direction + 1) % directions.len(),
                 _ => guard_pos = next_pos.clone()
             }
             next_pos = guard_pos.step(directions[direction])
         }
-        positions.insert(guard_pos);
-        positions.len() as u32
+        positions.insert((guard_pos, directions[direction]));
+        Some(positions.iter().map(|pos| (*pos).0.clone()).collect::<HashSet<Coord>>().len() as u32)
     }
 }
 
 impl Day for DaySix {
     fn part_one(&self, input: &str) -> String {
         let grid = Grid::new(input);
-        DaySix::count_guard_steps(&grid).to_string()
+        DaySix::count_guard_steps(&grid).unwrap().to_string()
     }
 
     fn part_two(&self, input: &str) -> String {
