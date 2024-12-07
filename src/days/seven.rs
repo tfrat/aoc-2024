@@ -42,11 +42,10 @@ impl Day for DaySeven {
         problems
             .iter()
             .map(|(result, numbers)| {
-                if DaySeven::find_solvable_sum(&vec!['*', '+'], result, &numbers[1..], &numbers[0]) > 0 {
-                    return result
-                }
-                &0u64
+                (result, DaySeven::find_solvable_sum(&vec!['*', '+'], result, &numbers[1..], &numbers[0]))
             })
+            .filter(|(_, answer)| *answer > 0)
+            .map(|(result, _)| result)
             .sum::<u64>()
             .to_string()
     }
@@ -56,13 +55,13 @@ impl Day for DaySeven {
         problems
             .iter()
             .map(|(result, numbers)| {
-                if DaySeven::find_solvable_sum(&vec!['*', '+', '|'], result, &numbers[1..], &numbers[0]) > 0 {
-                    return result
-                }
-                &0u64
+                (result, DaySeven::find_solvable_sum(&vec!['*', '+', '|'], result, &numbers[1..], &numbers[0]))
             })
+            .filter(|(_, answer)| *answer > 0)
+            .map(|(result, _)| result)
             .sum::<u64>()
-            .to_string()    }
+            .to_string()
+    }
 }
 
 #[cfg(test)]
