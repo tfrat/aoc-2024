@@ -2,6 +2,9 @@ use crate::days::Day;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
+use crate::utils::draw_frame;
 
 #[derive(Eq, Hash, PartialEq, Clone)]
 struct Coord {
@@ -34,6 +37,7 @@ impl Display for Coord {
     }
 }
 
+#[derive(Clone)]
 struct Grid {
     grid: HashMap<(i32, i32), char>,
     width: u32,
@@ -89,11 +93,11 @@ impl Grid {
     }
 
     #[allow(dead_code)]
-    fn print_around(&self, x: i32, y: i32) -> String {
-        (-1..=1)
-            .map(|x_offset| {
-                let line = (-1..=1)
-                    .map(|y_offset| self.get(x + x_offset, y + y_offset).unwrap_or(&' '))
+    fn print_around(&self, x: i32, y: i32, window_length: i32) -> String {
+        (-window_length..=window_length)
+            .map(|y_offset| {
+                let line = (-window_length..=window_length)
+                    .map(|x_offset| self.get(x + x_offset, y + y_offset).unwrap_or(&' '))
                     .collect::<String>();
                 line + "\n"
             })
@@ -114,19 +118,14 @@ impl DaySix {
             .position(|dir| dir == grid.get_pos(&grid.starting_pos).unwrap())?;
         let mut next_pos = guard_pos.step(directions[direction]);
         while let Some(place) = grid.get_pos(&next_pos) {
+            // let mut foo = grid.clone();
+            // for (pos, letter) in &positions {
+            //     foo.set(&pos, *letter);
+            // }
+            // draw_frame(&foo.print_around(guard_pos.x, guard_pos.y, 15), Some(50));
             match place {
                 '#' | '0' => direction = (direction + 1) % directions.len(),
                 _ if positions.contains(&(guard_pos.clone(), directions[direction])) => {
-                    let mut foo = Grid {
-                        grid: grid.grid.clone(),
-                        width: grid.width,
-                        height: grid.height,
-                        starting_pos: grid.starting_pos.clone(),
-                    };
-                    for (pos, letter) in positions {
-                        foo.set(&pos, letter);
-                    }
-                    println!("{}\n--------------\n", foo.print());
                     return None;
                 }
                 _ => {
@@ -157,12 +156,7 @@ impl DaySix {
         let mut handles = vec![];
         while let Some(place) = grid.get_pos(&next_pos) {
             if place != &'#' {
-                let mut new_grid = Grid {
-                    starting_pos: guard_pos.clone(),
-                    grid: grid.grid.clone(),
-                    height: grid.height,
-                    width: grid.width,
-                };
+                let mut new_grid = grid.clone();
                 new_grid.set(&next_pos, '0');
                 new_grid.set(&grid.starting_pos, '.');
                 new_grid.set(&guard_pos, directions[direction]);

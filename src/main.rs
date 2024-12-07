@@ -1,4 +1,5 @@
 mod days;
+mod utils;
 
 use crate::days::get_day;
 use clap::{command, Parser};

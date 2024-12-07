@@ -2,7 +2,7 @@ use crate::Part;
 
 mod five;
 mod four;
-pub mod one;
+mod one;
 mod seven;
 mod six;
 mod three;
