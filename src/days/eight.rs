@@ -30,6 +30,8 @@ pub struct DayEight {}
 impl DayEight {
     fn find_antinodes(antenna_one: &Coord, antenna_two: &Coord, br: &Coord) -> HashSet<Coord> {
         let mut antinodes = HashSet::new();
+        antinodes.insert(antenna_one.clone());
+        antinodes.insert(antenna_two.clone());
 
         let delta_coord = Coord {
             x: antenna_two.x - antenna_one.x,
