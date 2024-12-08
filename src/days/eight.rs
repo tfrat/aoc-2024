@@ -28,15 +28,24 @@ impl Coord {
 pub struct DayEight {}
 
 impl DayEight {
-    fn find_antinodes(antenna_one: &Coord, antenna_two: &Coord) -> (Coord, Coord) {
+    fn find_antinodes(antenna_one: &Coord, antenna_two: &Coord, br: &Coord) -> HashSet<Coord> {
+        let mut antinodes = HashSet::new();
+
         let delta_coord = Coord {
             x: antenna_two.x - antenna_one.x,
             y: antenna_two.y - antenna_one.y,
         };
-        (
-            antenna_one.minus(&delta_coord),
-            antenna_two.plus(&delta_coord),
-        )
+        let mut next_coord = antenna_one.minus(&delta_coord);
+        while next_coord.x < br.x && next_coord.x >= 0 && next_coord.y < br.y && next_coord.y >= 0 {
+            antinodes.insert(next_coord.clone());
+            next_coord = next_coord.minus(&delta_coord);
+        }
+        next_coord = antenna_two.plus(&delta_coord);
+        while next_coord.x < br.x && next_coord.x >= 0 && next_coord.y < br.y && next_coord.y >= 0 {
+            antinodes.insert(next_coord.clone());
+            next_coord = next_coord.plus(&delta_coord);
+        }
+        antinodes
     }
     fn find_antenna(input: &str) -> HashMap<char, HashSet<Coord>> {
         let mut antennae_positions: HashMap<char, HashSet<Coord>> = HashMap::new();
@@ -71,8 +80,7 @@ impl DayEight {
                 positions
                     .iter()
                     .permutations(2)
-                    .map(|pair| DayEight::find_antinodes(pair[0], pair[1]))
-                    .flat_map(|(left, right)| vec![left, right])
+                    .flat_map(|pair| DayEight::find_antinodes(pair[0], pair[1], map_size))
             })
             .filter(|coord| {
                 coord.x < map_size.x && coord.x >= 0 && coord.y < map_size.y && coord.y >= 0
@@ -100,7 +108,19 @@ impl Day for DayEight {
     }
 
     fn part_two(&self, input: &str) -> String {
-        input.to_string()
+        let positions = DayEight::find_antenna(input);
+        let (x, y) = (
+            input.lines().collect::<Vec<_>>()[0].len(),
+            input.lines().count(),
+        );
+        DayEight::find_all_antinodes(
+            &Coord {
+                x: x as i32,
+                y: y as i32,
+            },
+            &positions,
+        )
+        .to_string()
     }
 }
 
@@ -113,10 +133,17 @@ pub mod test {
         let cases = vec![(
             Coord { x: 0, y: 0 },
             Coord { x: 1, y: 1 },
-            (Coord { x: -1, y: -1 }, Coord { x: 2, y: 2 }),
+            HashSet::from_iter(
+                [Coord { x: -1, y: -1 }, Coord { x: 2, y: 2 }]
+                    .iter()
+                    .cloned(),
+            ),
         )];
         for (left, right, expected) in cases {
-            assert_eq!(DayEight::find_antinodes(&left, &right), expected)
+            assert_eq!(
+                DayEight::find_antinodes(&left, &right, &Coord { x: 3, y: 3 }),
+                expected
+            )
         }
     }
 
@@ -146,7 +173,21 @@ pub mod test {
     #[test]
     fn test_part_two() {
         let day = DayEight::default();
-        let cases = vec![("", 0)];
+        let cases = vec![(
+            r#"............
+........0...
+.....0......
+.......0....
+....0.......
+......A.....
+............
+............
+........A...
+.........A..
+............
+............"#,
+            34,
+        )];
         for (input, expected) in cases {
             assert_eq!(day.part_two(input), expected.to_string())
         }
