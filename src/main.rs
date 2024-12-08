@@ -6,6 +6,7 @@ use clap::{command, Parser};
 use std::fmt::Display;
 use std::fs;
 use std::process;
+use std::time::Instant;
 
 #[derive(clap::ValueEnum, Clone, Eq, PartialEq)]
 enum Part {
@@ -49,9 +50,10 @@ fn main() {
             process::exit(1)
         }
     };
+    let start = Instant::now();
     let answer: Box<dyn Display> = match args.part {
         Part::PartOne => Box::new(day.part_one(&input)),
         Part::PartTwo => Box::new(day.part_two(&input)),
     };
-    println!("{}", answer)
+    println!("Duration: {:?}, Answer: {}", start.elapsed(), answer);
 }
