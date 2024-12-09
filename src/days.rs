@@ -3,6 +3,7 @@ use crate::Part;
 mod eight;
 mod five;
 mod four;
+mod nine;
 mod one;
 mod seven;
 mod six;
@@ -28,6 +29,7 @@ pub fn get_day(day: &u8, part: &Part) -> Result<Box<dyn Day>, String> {
         (6, _) => Ok(Box::new(six::DaySix::default())),
         (7, _) => Ok(Box::new(seven::DaySeven::default())),
         (8, _) => Ok(Box::new(eight::DayEight::default())),
+        (9, _) => Ok(Box::new(nine::DayNine::default())),
         _ => Err(format!("Day {} not supported.", day)),
     }
 }
