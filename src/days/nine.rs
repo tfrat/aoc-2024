@@ -57,6 +57,11 @@ impl DayNine {
             })
             .sum()
     }
+
+    fn contiguous_defrag(total_file_size: &u32, disk_map: &[Option<u32>]) -> u64 {
+        // todo
+        (*total_file_size + disk_map.len() as u32) as u64
+    }
 }
 
 impl Day for DayNine {
@@ -66,7 +71,8 @@ impl Day for DayNine {
     }
 
     fn part_two(&self, input: &str) -> String {
-        input.to_string()
+        let (total_file_size, disk_map) = DayNine::load_diskmap(input);
+        DayNine::contiguous_defrag(&total_file_size, &disk_map).to_string()
     }
 }
 
@@ -86,7 +92,7 @@ pub mod test {
     #[test]
     fn test_part_two() {
         let day = DayNine::default();
-        let cases = vec![("", 0)];
+        let cases = vec![("2333133121414131402", 2858)];
         for (input, expected) in cases {
             assert_eq!(day.part_two(input), expected.to_string())
         }
