@@ -59,6 +59,20 @@ impl DayNine {
     }
 
     fn contiguous_defrag(total_file_size: &u32, disk_map: &[Option<u32>]) -> u64 {
+        // let mut defragged = disk_map.clone();
+        // let mut next_file = defragged.
+        //     iter()
+        //     .rev()
+        //     .flatten()
+        //     .enumerate()
+        //     .zip(defragged.iter().rev().flatten().skip(1))
+        //     .scan(Vec::new(), |positions, (i, current), next|
+        //         if positions.is_empty() {
+        //             positions.push((i as u32, current));
+        //
+        //         }
+        //     )
+        // defragged.iter_
         // todo
         (*total_file_size + disk_map.len() as u32) as u64
     }
