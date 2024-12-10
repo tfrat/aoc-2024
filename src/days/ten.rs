@@ -77,10 +77,37 @@ impl DayTen {
             })
     }
 
+    fn count_hiking_trail_rating(pos: &Coord, map: &Grid) -> u32 {
+        let elevation = match map.get(pos) {
+            Some(elevation) => elevation,
+            None => return 0,
+        };
+
+        if *elevation == 9 {
+            return 1;
+        }
+
+        [pos.plus_x(1), pos.plus_x(-1), pos.plus_y(1), pos.plus_y(-1)]
+            .iter()
+            .filter(|next_pos| {
+                map.get(next_pos)
+                    .is_some_and(|value| *value == *elevation + 1)
+            })
+            .map(|next_pos| DayTen::count_hiking_trail_rating(next_pos, map))
+            .sum()
+    }
+
     fn count_good_trailheads(map: &Grid) -> u32 {
         map.trailheads
             .iter()
             .map(|trailhead| Self::count_hiking_trails(trailhead, map).len() as u32)
+            .sum()
+    }
+
+    fn count_good_trailheads_rating(map: &Grid) -> u32 {
+        map.trailheads
+            .iter()
+            .map(|trailhead| Self::count_hiking_trail_rating(trailhead, map))
             .sum()
     }
 }
@@ -93,7 +120,9 @@ impl Day for DayTen {
     }
 
     fn part_two(&self, input: &str) -> String {
-        input.to_string()
+        let map = Grid::new(input);
+
+        DayTen::count_good_trailheads_rating(&map).to_string()
     }
 }
 
@@ -132,7 +161,26 @@ pub mod test {
     #[test]
     fn test_part_two() {
         let day = DayTen::default();
-        let cases = vec![("", 0)];
+        let cases = vec![
+            (
+                r#"0123
+1234
+8765
+9876"#,
+                16,
+            ),
+            (
+                r#"89010123
+78121874
+87430965
+96549874
+45678903
+32019012
+01329801
+10456732"#,
+                81,
+            ),
+        ];
         for (input, expected) in cases {
             assert_eq!(day.part_two(input), expected.to_string())
         }
