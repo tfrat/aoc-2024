@@ -81,11 +81,24 @@ impl DayNine {
             .sum()
     }
 
+    fn print_disk_map(disk_map: &[Option<u32>]) {
+        let out: String = disk_map
+            .iter()
+            .map(|option| match option {
+                Some(number) => number.to_string(),
+                None => ".".to_string(),
+            })
+            .collect::<Vec<String>>()
+            .join("");
+        println!("{out:?}");
+    }
+
     fn contiguous_defrag(
         files: &[Range<usize>],
         mut spaces: Vec<Range<usize>>,
         disk_map: &mut [Option<u32>],
     ) {
+        Self::print_disk_map(disk_map);
         files.iter().rev().for_each(|file_range| {
             if let Some((space_range_index, space_range)) = spaces
                 .clone()
@@ -105,6 +118,7 @@ impl DayNine {
                     )
                 }
             }
+            Self::print_disk_map(disk_map);
         })
     }
 }
