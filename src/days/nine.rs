@@ -117,7 +117,6 @@ impl Day for DayNine {
     fn part_two(&self, input: &str) -> String {
         let (_, ref mut disk_map) = DayNine::load_diskmap(input);
         let (files, spaces) = DayNine::load_files_and_slice_locations(input);
-        // too high: 8800549860065
         DayNine::contiguous_defrag(&files, spaces, disk_map);
         disk_map
             .iter()

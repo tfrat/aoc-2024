@@ -1,37 +1,52 @@
 use crate::days::Day;
+use std::collections::HashMap;
+use std::time::Instant;
 
 #[derive(Default)]
 pub struct DayEleven {}
 
 impl DayEleven {
-    fn parse_stones(input: &str) -> Vec<u64> {
-        input
-            .split(" ")
-            .map(|stone| stone.parse().unwrap())
-            .collect()
+    fn parse_stones(input: &str) -> HashMap<u64, u64> {
+        input.split(" ").fold(HashMap::new(), |mut map, stone| {
+            map.entry(stone.parse().unwrap())
+                .and_modify(|count| *count += 1)
+                .or_insert(1);
+            map
+        })
     }
 
-    fn blink(stones: &[u64]) -> Vec<u64> {
-        stones
+    fn blink(stone_lists: &HashMap<u64, u64>) -> HashMap<u64, u64> {
+        stone_lists
             .iter()
-            .flat_map(|stone| {
+            .fold(HashMap::new(), |mut new_map, (stone, count)| {
                 let stone_string = stone.to_string();
-                match (stone, stone_string.len()) {
+                let new_values = match (stone, stone_string.len()) {
                     (0, _) => vec![1],
                     (_, len) if len % 2 == 0 => {
                         let (left, right) = stone_string.split_at(stone_string.len() / 2);
                         vec![left.parse().unwrap(), right.parse().unwrap()]
                     }
                     _ => vec![stone * 2024],
-                }
+                };
+
+                // Count up the new values
+                new_values.iter().for_each(|value| {
+                    new_map
+                        .entry(*value)
+                        .and_modify(|new_count| *new_count += count)
+                        .or_insert(*count);
+                });
+                new_map
             })
-            .collect()
     }
 
-    fn count_stones(stones: &[u64], blinks: u32) -> u32 {
+    fn count_stones(stones: &HashMap<u64, u64>, blinks: u32) -> u64 {
+        let start = Instant::now();
         (0..blinks)
-            .fold(stones.to_owned(), |next, _| DayEleven::blink(&next))
-            .len() as u32
+            .inspect(|blink| println!("Blink {blink}: {:?}", start.elapsed()))
+            .fold(stones.clone(), |next, _| DayEleven::blink(&next))
+            .values()
+            .sum()
     }
 }
 
@@ -42,13 +57,29 @@ impl Day for DayEleven {
     }
 
     fn part_two(&self, input: &str) -> String {
-        input.to_string()
+        let stones = DayEleven::parse_stones(input);
+        DayEleven::count_stones(&stones, 75).to_string()
     }
 }
 
 #[cfg(test)]
 pub mod test {
     use super::*;
+
+    #[test]
+    fn test_blink() {
+        let cases = vec![
+            ("2024", 2),
+            ("20 24", 4),
+            ("20 24 20 24 20 24 20 24", 16),
+            ("20 24 20 24", 8),
+            ("1036288 7 2 20 24 4048 1 4048 8096 28 67 60 32", 22),
+        ];
+        for (input, expected) in cases {
+            let stones = DayEleven::parse_stones(input);
+            assert_eq!(DayEleven::blink(&stones).values().sum::<u64>(), expected)
+        }
+    }
 
     #[test]
     fn test_part_one() {
