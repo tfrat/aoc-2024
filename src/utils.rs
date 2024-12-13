@@ -34,18 +34,20 @@ impl Coord {
     pub fn new(x: i32, y: i32) -> Coord {
         Coord { x, y }
     }
-    pub fn plus_x(&self, offset: i32) -> Coord {
+
+    pub fn plus(&self, x_offset: i32, y_offset: i32) -> Coord {
         Coord {
-            x: self.x + offset,
-            y: self.y,
+            x: self.x + x_offset,
+            y: self.y + y_offset,
         }
     }
 
+    pub fn plus_x(&self, offset: i32) -> Coord {
+        self.plus(offset, 0)
+    }
+
     pub fn plus_y(&self, offset: i32) -> Coord {
-        Coord {
-            x: self.x,
-            y: self.y + offset,
-        }
+        self.plus(0, offset)
     }
 }
 
