@@ -72,14 +72,30 @@ impl DayTwelve {
         coord: &Coord,
         diagonal: &Diagonal,
         grid: &Grid<char>,
+        neighbor_plant: Option<&char>,
     ) -> bool {
         let (one, two) = match diagonal {
-            Diagonal::TL => (grid.get(&coord.plus_x(-1)), grid.get(&coord.plus_y(1))),
-            Diagonal::TR => (grid.get(&coord.plus_x(1)), grid.get(&coord.plus_y(1))),
-            Diagonal::BR => (grid.get(&coord.plus_x(1)), grid.get(&coord.plus_y(-1))),
-            Diagonal::BL => (grid.get(&coord.plus_x(-1)), grid.get(&coord.plus_y(-1))),
+            Diagonal::TL => (
+                grid.get(&coord.plus_x(-1)).unwrap_or(&'+'),
+                grid.get(&coord.plus_y(1)).unwrap_or(&'+'),
+            ),
+            Diagonal::TR => (
+                grid.get(&coord.plus_x(1)).unwrap_or(&'+'),
+                grid.get(&coord.plus_y(1)).unwrap_or(&'+'),
+            ),
+            Diagonal::BR => (
+                grid.get(&coord.plus_x(1)).unwrap_or(&'+'),
+                grid.get(&coord.plus_y(-1)).unwrap_or(&'+'),
+            ),
+            Diagonal::BL => (
+                grid.get(&coord.plus_x(-1)).unwrap_or(&'+'),
+                grid.get(&coord.plus_y(-1)).unwrap_or(&'+'),
+            ),
         };
-        one.is_none_or(|other| other != plant) && two.is_none_or(|other| other != plant)
+        one != plant
+            && neighbor_plant.is_none_or(|neighbor| neighbor == one)
+            && two != plant
+            && neighbor_plant.is_none_or(|neighbor| neighbor == two)
     }
 
     fn is_anterior_corner(
@@ -96,7 +112,13 @@ impl DayTwelve {
         };
         let next_plant = grid.get(&next);
         next_plant.is_none_or(|other| other != plant)
-            && Self::is_interior_corner(next_plant.unwrap_or(&'+'), &next, &opposite, grid)
+            && Self::is_interior_corner(
+                next_plant.unwrap_or(&'+'),
+                &next,
+                &opposite,
+                grid,
+                Some(plant),
+            )
     }
 
     fn visit(
@@ -120,7 +142,7 @@ impl DayTwelve {
         let corners = [Diagonal::TR, Diagonal::BL, Diagonal::BR, Diagonal::TL]
             .iter()
             .filter(|diagonal| {
-                Self::is_interior_corner(plant, coord, diagonal, farm)
+                Self::is_interior_corner(plant, coord, diagonal, farm, None)
                     || Self::is_anterior_corner(plant, coord, diagonal, farm)
             })
             .count() as u32;
