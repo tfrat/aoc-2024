@@ -1,5 +1,6 @@
 use crossterm::terminal::ClearType;
 use crossterm::{cursor, terminal, ExecutableCommand};
+use std::collections::HashMap;
 use std::io::{stdout, IsTerminal, Write};
 use std::thread::sleep;
 use std::time::Duration;
@@ -21,4 +22,62 @@ pub fn draw_frame(string: &str, delay: Option<u64>) {
     stdout.flush().unwrap();
 
     sleep(Duration::from_millis(delay.unwrap_or(9)));
+}
+
+#[derive(Eq, Hash, PartialEq, Clone, Copy, Debug)]
+pub struct Coord {
+    pub x: i32,
+    pub y: i32,
+}
+
+impl Coord {
+    pub fn new(x: i32, y: i32) -> Coord {
+        Coord { x, y }
+    }
+    pub fn plus_x(&self, offset: i32) -> Coord {
+        Coord {
+            x: self.x + offset,
+            y: self.y,
+        }
+    }
+
+    pub fn plus_y(&self, offset: i32) -> Coord {
+        Coord {
+            x: self.x,
+            y: self.y + offset,
+        }
+    }
+}
+
+pub struct Grid<T> {
+    grid: HashMap<Coord, T>,
+    pub top_left: Coord,
+    pub bottom_right: Coord,
+}
+
+impl<T> Grid<T> {
+    pub fn new() -> Grid<T> {
+        Grid {
+            grid: HashMap::new(),
+            top_left: Coord::new(0, 0),
+            bottom_right: Coord::new(0, 0),
+        }
+    }
+
+    pub fn set(&mut self, coord: Coord, value: T) {
+        self.grid.insert(coord, value);
+        self.top_left = Coord::new(self.top_left.x.max(coord.x), self.top_left.y.max(coord.y));
+        self.bottom_right = Coord::new(
+            self.bottom_right.x.min(coord.x),
+            self.bottom_right.y.min(coord.y),
+        );
+    }
+
+    pub fn get(&self, coord: &Coord) -> Option<&T> {
+        self.grid.get(coord)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (&Coord, &T)> {
+        self.grid.iter()
+    }
 }
