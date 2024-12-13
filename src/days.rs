@@ -9,6 +9,7 @@ mod one;
 mod seven;
 mod six;
 mod ten;
+mod thirteen;
 mod three;
 mod twelve;
 mod two;
@@ -36,6 +37,7 @@ pub fn get_day(day: &u8, part: &Part) -> Result<Box<dyn Day>, String> {
         (10, _) => Ok(Box::new(ten::DayTen::default())),
         (11, _) => Ok(Box::new(eleven::DayEleven::default())),
         (12, _) => Ok(Box::new(twelve::DayTwelve::default())),
+        (13, _) => Ok(Box::new(thirteen::DayThirteen::default())),
 
         _ => Err(format!("Day {} not supported.", day)),
     }
