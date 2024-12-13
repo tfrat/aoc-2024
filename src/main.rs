@@ -10,12 +10,6 @@ use std::fs;
 use std::process;
 use std::time::Instant;
 
-#[derive(clap::ValueEnum, Clone, Eq, PartialEq)]
-enum Part {
-    PartOne,
-    PartTwo,
-}
-
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Args {
@@ -23,19 +17,17 @@ struct Args {
     #[arg(short, long)]
     day: u8,
     /// Which part to execute
-    #[arg(short, long, value_enum)]
-    part: Part,
-    #[arg(short, long, value_enum)]
-    filename: String,
+    #[arg(short, long)]
+    part: u8,
 }
 
-fn get_input(day: &u8, filename: &str) -> String {
-    let path = format!("inputs/day_{}/{}", day, filename);
+fn get_input(day: &u8) -> String {
+    let path = format!("inputs/day_{}/input.txt", day);
 
     match fs::read_to_string(&path) {
         Ok(contents) => contents,
         Err(err) => {
-            eprintln!("Error reading file '{}': {}", &filename, err);
+            eprintln!("Error reading file: {}", err);
             process::exit(1);
         }
     }
@@ -44,8 +36,8 @@ fn get_input(day: &u8, filename: &str) -> String {
 fn main() {
     let args: Args = Args::parse();
 
-    let input = get_input(&args.day, &args.filename);
-    let day = match get_day(&args.day, &args.part) {
+    let input = get_input(&args.day);
+    let day = match get_day(&args.day) {
         Ok(day) => day,
         Err(message) => {
             println!("{}", message);
@@ -54,8 +46,9 @@ fn main() {
     };
     let start = Instant::now();
     let answer: Box<dyn Display> = match args.part {
-        Part::PartOne => Box::new(day.part_one(&input)),
-        Part::PartTwo => Box::new(day.part_two(&input)),
+        1 => Box::new(day.part_one(&input)),
+        2 => Box::new(day.part_two(&input)),
+        _ => panic!("Only parts 1 or 2 are supported."),
     };
     println!("Duration: {:?}, Answer: {}", start.elapsed(), answer);
 }

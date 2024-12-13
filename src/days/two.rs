@@ -1,11 +1,8 @@
 use crate::days::Day;
 use std::cmp::min;
 
-pub struct DayTwo {
-    pub min_step: i32,
-    pub max_step: i32,
-    pub enable_dampener: bool,
-}
+#[derive(Default)]
+pub struct DayTwo {}
 
 impl DayTwo {
     fn parse_reports(input: &str) -> Vec<Vec<i32>> {
@@ -26,10 +23,7 @@ impl DayTwo {
     fn check_report(&self, report: &[i32]) -> bool {
         let out_of_bounds = report
             .windows(2)
-            .filter(|window| {
-                (window[1] - window[0]).abs() < self.min_step
-                    || (window[1] - window[0]).abs() > self.max_step
-            })
+            .filter(|window| (window[1] - window[0]).abs() < 1 || (window[1] - window[0]).abs() > 3)
             .count();
         let sorted: &mut Vec<i32> = &mut report.to_vec();
         sorted.sort();
@@ -46,11 +40,11 @@ impl DayTwo {
         out_of_bounds + min(count, reverse_count) == 0
     }
 
-    fn is_report_safe(&self, report: &[i32]) -> bool {
+    fn is_report_safe(&self, report: &[i32], enable_dampener: &bool) -> bool {
         if self.check_report(report) {
             return true;
         }
-        if self.enable_dampener {
+        if *enable_dampener {
             for i in 0..report.len() {
                 let vec: Vec<i32> = report[0..i]
                     .iter()
@@ -67,22 +61,12 @@ impl DayTwo {
     }
 }
 
-impl Default for DayTwo {
-    fn default() -> Self {
-        Self {
-            min_step: 1,
-            max_step: 3,
-            enable_dampener: true,
-        }
-    }
-}
-
 impl Day for DayTwo {
     fn part_one(&self, input: &str) -> String {
         let reports = DayTwo::parse_reports(input);
         let count = reports
             .iter()
-            .map(|report| self.is_report_safe(report))
+            .map(|report| self.is_report_safe(report, &false))
             .filter(|is_safe| *is_safe)
             .count();
 
@@ -93,7 +77,7 @@ impl Day for DayTwo {
         let reports = DayTwo::parse_reports(input);
         let count = reports
             .iter()
-            .map(|report| self.is_report_safe(report))
+            .map(|report| self.is_report_safe(report, &true))
             .filter(|is_safe| *is_safe)
             .count();
         count.to_string()
@@ -105,10 +89,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_example_part_one() {
-        let day = DayTwo {
-            enable_dampener: false,
-            ..Default::default()
-        };
+        let day = DayTwo::default();
 
         let cases = vec![
             (vec![7, 6, 4, 2, 1], true),
@@ -119,7 +100,7 @@ mod tests {
             (vec![1, 3, 6, 7, 9], true),
         ];
         for (report, expected) in cases {
-            assert_eq!(day.is_report_safe(&report), expected);
+            assert_eq!(day.is_report_safe(&report, &false), expected);
         }
     }
 
@@ -144,7 +125,7 @@ mod tests {
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>()
                 .join(", ");
-            assert_eq!(day.is_report_safe(&report), expected, "{}", readable);
+            assert_eq!(day.is_report_safe(&report, &true), expected, "{}", readable);
         }
     }
 }
