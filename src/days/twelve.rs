@@ -230,7 +230,7 @@ VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE"#,
-                1930,
+                1206,
             ),
         ];
         for (input, expected) in cases {
