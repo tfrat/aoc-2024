@@ -56,8 +56,8 @@ impl DayTwelve {
                     .map(|(x, plant)| {
                         (
                             Coord {
-                                x: x as i32,
-                                y: y as i32,
+                                x: x as i64,
+                                y: y as i64,
                             },
                             plant,
                         )

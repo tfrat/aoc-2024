@@ -26,27 +26,27 @@ pub fn draw_frame(string: &str, delay: Option<u64>) {
 
 #[derive(Eq, Hash, PartialEq, Clone, Copy, Debug)]
 pub struct Coord {
-    pub x: i32,
-    pub y: i32,
+    pub x: i64,
+    pub y: i64,
 }
 
 impl Coord {
-    pub fn new(x: i32, y: i32) -> Coord {
+    pub fn new(x: i64, y: i64) -> Coord {
         Coord { x, y }
     }
 
-    pub fn plus(&self, x_offset: i32, y_offset: i32) -> Coord {
+    pub fn plus(&self, x_offset: i64, y_offset: i64) -> Coord {
         Coord {
             x: self.x + x_offset,
             y: self.y + y_offset,
         }
     }
 
-    pub fn plus_x(&self, offset: i32) -> Coord {
+    pub fn plus_x(&self, offset: i64) -> Coord {
         self.plus(offset, 0)
     }
 
-    pub fn plus_y(&self, offset: i32) -> Coord {
+    pub fn plus_y(&self, offset: i64) -> Coord {
         self.plus(0, offset)
     }
 }
