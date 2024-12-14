@@ -93,10 +93,6 @@ impl DayFourteen {
                 .iter()
                 .map(|robot| robot.step(height, width))
                 .collect::<Vec<Robot>>();
-
-            // let frame = format!("{}{second}", &DayFourteen::draw_robots(&next_robots, height, width));
-            // draw_frame(&frame, Some(50));
-
             Some((next_robots, second + 1))
         })
         .map(|(end_robots, _)| end_robots)
@@ -145,15 +141,11 @@ impl DayFourteen {
     }
 
     fn find_christmas_tree(robots: &[Robot], width: i64, height: i64) -> u32 {
-        successors(Some((robots.to_owned(), 1)), |(current_robots, second)| {
+        successors(Some((robots.to_owned(), 0)), |(current_robots, second)| {
             let next_robots = current_robots
                 .iter()
                 .map(|robot| robot.step(height, width))
                 .collect::<Vec<Robot>>();
-
-            // let frame = format!("{}{second}", &DayFourteen::draw_robots(&next_robots, height, width));
-            // draw_frame(&frame, Some(50));
-
             Some((next_robots, second + 1))
         })
         .map(|(next_robots, second)| {
@@ -176,28 +168,6 @@ impl DayFourteen {
         .unwrap()
         .1
     }
-
-    #[allow(dead_code)]
-    fn draw_robots(robots: &HashSet<Coord>, height: i64, width: i64) -> String {
-        // let set = robots
-        //     .iter()
-        //     .map(|robot| robot.position)
-        //     .collect::<HashSet<Coord>>();
-        (0..width)
-            .map(|x| {
-                let line = (0..height)
-                    .map(|y| {
-                        if robots.contains(&Coord { x, y }) {
-                            'X'
-                        } else {
-                            '.'
-                        }
-                    })
-                    .collect::<String>();
-                line + "\n"
-            })
-            .collect()
-    }
 }
 
 impl Day for DayFourteen {
@@ -209,7 +179,6 @@ impl Day for DayFourteen {
     fn part_two(&self, input: &str) -> String {
         let robots = DayFourteen::parse_robots(input);
 
-        // too high: 7038
         DayFourteen::find_christmas_tree(&robots, self.width, self.height).to_string()
     }
 }
