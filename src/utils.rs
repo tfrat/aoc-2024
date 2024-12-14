@@ -83,3 +83,11 @@ impl<T> Grid<T> {
         self.grid.iter()
     }
 }
+
+#[derive(Eq, PartialEq, Hash, Debug)]
+pub enum Diagonal {
+    TL,
+    TR,
+    BR,
+    BL,
+}

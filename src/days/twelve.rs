@@ -1,13 +1,6 @@
 use crate::days::Day;
-use crate::utils::{Coord, Grid};
+use crate::utils::{Coord, Diagonal, Grid};
 use std::collections::{HashMap, HashSet};
-
-enum Diagonal {
-    TL,
-    TR,
-    BR,
-    BL,
-}
 
 #[derive(Eq, Hash, PartialEq, Clone, Copy, Default, Debug)]
 struct Region {
