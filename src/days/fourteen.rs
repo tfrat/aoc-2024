@@ -1,10 +1,10 @@
 use crate::days::Day;
 use crate::utils::{Coord, Diagonal};
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::iter::successors;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 struct Robot {
     position: Coord,
     velocity: Coord,
@@ -93,6 +93,10 @@ impl DayFourteen {
                 .iter()
                 .map(|robot| robot.step(height, width))
                 .collect::<Vec<Robot>>();
+
+            // let frame = format!("{}{second}", &DayFourteen::draw_robots(&next_robots, height, width));
+            // draw_frame(&frame, Some(50));
+
             Some((next_robots, second + 1))
         })
         .map(|(end_robots, _)| end_robots)
@@ -111,6 +115,89 @@ impl DayFourteen {
         .values()
         .product()
     }
+
+    fn is_shape(
+        point: &Coord,
+        robots: &HashSet<Coord>,
+        height: i64,
+        width: i64,
+        visited: &mut HashSet<Coord>,
+    ) -> Option<u32> {
+        if point.x < 0 || point.x >= width || point.y < 0 || point.y >= height {
+            return None;
+        }
+
+        if robots.contains(point) || visited.contains(point) {
+            return Some(0);
+        }
+
+        visited.insert(*point);
+
+        [
+            point.plus_x(1),
+            point.plus_x(-1),
+            point.plus_y(1),
+            point.plus_y(-1),
+        ]
+        .iter()
+        .map(|next| Self::is_shape(next, robots, height, width, visited))
+        .try_fold(1, |curr, next| next.map(|next| curr + next))
+    }
+
+    fn find_christmas_tree(robots: &[Robot], width: i64, height: i64) -> u32 {
+        successors(Some((robots.to_owned(), 1)), |(current_robots, second)| {
+            let next_robots = current_robots
+                .iter()
+                .map(|robot| robot.step(height, width))
+                .collect::<Vec<Robot>>();
+
+            // let frame = format!("{}{second}", &DayFourteen::draw_robots(&next_robots, height, width));
+            // draw_frame(&frame, Some(50));
+
+            Some((next_robots, second + 1))
+        })
+        .map(|(next_robots, second)| {
+            (
+                next_robots
+                    .iter()
+                    .map(|robot| robot.position)
+                    .collect::<HashSet<Coord>>(),
+                second,
+            )
+        })
+        .find(|(next_robots, _)| {
+            let mid = Coord::new(width / 2, height / 2);
+            if next_robots.contains(&mid) {
+                return false;
+            }
+            let area = Self::is_shape(&mid, next_robots, height, width, &mut HashSet::new());
+            area.is_some_and(|area| area > 50)
+        })
+        .unwrap()
+        .1
+    }
+
+    #[allow(dead_code)]
+    fn draw_robots(robots: &HashSet<Coord>, height: i64, width: i64) -> String {
+        // let set = robots
+        //     .iter()
+        //     .map(|robot| robot.position)
+        //     .collect::<HashSet<Coord>>();
+        (0..width)
+            .map(|x| {
+                let line = (0..height)
+                    .map(|y| {
+                        if robots.contains(&Coord { x, y }) {
+                            'X'
+                        } else {
+                            '.'
+                        }
+                    })
+                    .collect::<String>();
+                line + "\n"
+            })
+            .collect()
+    }
 }
 
 impl Day for DayFourteen {
@@ -120,7 +207,10 @@ impl Day for DayFourteen {
     }
 
     fn part_two(&self, input: &str) -> String {
-        input.to_string()
+        let robots = DayFourteen::parse_robots(input);
+
+        // too high: 7038
+        DayFourteen::find_christmas_tree(&robots, self.width, self.height).to_string()
     }
 }
 
