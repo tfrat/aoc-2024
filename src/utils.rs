@@ -91,3 +91,23 @@ pub enum Diagonal {
     BR,
     BL,
 }
+
+#[derive(Eq, PartialEq, Hash, Debug)]
+pub enum Direction {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
+impl Direction {
+    pub fn new(letter: &char) -> Option<Self> {
+        match letter {
+            '^' => Some(Self::Up),
+            '>' => Some(Self::Right),
+            'v' => Some(Self::Down),
+            '<' => Some(Self::Left),
+            _ => None,
+        }
+    }
+}
