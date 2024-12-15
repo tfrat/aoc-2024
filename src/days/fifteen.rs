@@ -1,7 +1,7 @@
 use crate::days::Day;
 use crate::utils::{Coord, Direction, Grid};
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
 enum Object {
     Robot,
     Box,
@@ -24,7 +24,7 @@ impl Object {
 pub struct DayFifteen {}
 
 impl DayFifteen {
-    fn parse_factory(input: &str) -> (Grid<Object>, Vec<Direction>) {
+    fn parse_factory(input: &str) -> (Coord, Grid<Object>, Vec<Direction>) {
         let (factory_input, moves_input) = input.split_once("\n\n").unwrap();
 
         let factory =
@@ -38,13 +38,21 @@ impl DayFifteen {
                     factory
                 });
 
+        let robot = {
+            factory
+                .iter()
+                .find(|(_, obj)| **obj == Object::Robot)
+                .unwrap()
+                .0
+        };
+
         let moves = moves_input
             .lines()
             .flat_map(|line| line.chars())
             .flat_map(|letter| Direction::new(&letter))
             .collect();
 
-        (factory, moves)
+        (*robot, factory, moves)
     }
 
     fn score_factory(factory: &Grid<Object>) -> i64 {
@@ -55,20 +63,60 @@ impl DayFifteen {
             .sum()
     }
 
-    fn execute_move(_factory: &mut Grid<Object>, _direction: &Direction) {}
+    fn find_moves(
+        position: &Coord,
+        factory: &mut Grid<Object>,
+        direction: &Direction,
+    ) -> Option<Vec<(Coord, Object)>> {
+        let next = match direction {
+            Direction::Up => position.plus_y(-1),
+            Direction::Down => position.plus_y(1),
+            Direction::Left => position.plus_x(-1),
+            Direction::Right => position.plus_x(1),
+        };
+        let next_obj = factory.get(&next)?;
 
-    fn execute_moves(factory: &mut Grid<Object>, moves: &[Direction]) -> i64 {
-        moves
-            .iter()
-            .for_each(|direction| Self::execute_move(factory, direction));
+        if *next_obj == Object::Wall {
+            return None;
+        }
+
+        let current_obj = *factory.get(position)?;
+
+        if *next_obj == Object::Empty {
+            return Some(vec![(next, current_obj), (*position, Object::Empty)]);
+        }
+
+        match Self::find_moves(&next, factory, direction) {
+            None => None,
+            Some(moves) => {
+                let mut total_moves = moves.clone();
+                total_moves.extend(vec![(next, current_obj), (*position, Object::Empty)]);
+                Some(total_moves)
+            }
+        }
+    }
+
+    fn execute_moves(robot: &Coord, factory: &mut Grid<Object>, moves: &[Direction]) -> i64 {
+        let mut current = *robot;
+        for direction in moves {
+            if let Some(next) = Self::find_moves(&current, factory, direction) {
+                for (coord, obj) in next {
+                    factory.set(coord, obj);
+                    if obj == Object::Robot {
+                        current = coord;
+                    }
+                }
+            }
+        }
+
         DayFifteen::score_factory(factory)
     }
 }
 
 impl Day for DayFifteen {
     fn part_one(&self, input: &str) -> String {
-        let (mut factory, moves) = DayFifteen::parse_factory(input);
-        DayFifteen::execute_moves(&mut factory, &moves).to_string()
+        let (robot, mut factory, moves) = DayFifteen::parse_factory(input);
+        DayFifteen::execute_moves(&robot, &mut factory, &moves).to_string()
     }
 
     fn part_two(&self, input: &str) -> String {

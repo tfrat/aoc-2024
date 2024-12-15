@@ -51,6 +51,7 @@ impl Coord {
     }
 }
 
+#[derive(Clone)]
 pub struct Grid<T> {
     grid: HashMap<Coord, T>,
     pub top_left: Coord,
