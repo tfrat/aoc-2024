@@ -1,6 +1,7 @@
 use crate::days::Day;
 use crate::utils::{Coord, Direction, Grid};
 
+#[derive(Debug, Eq, PartialEq, Hash)]
 enum Object {
     Robot,
     Box,
@@ -46,9 +47,21 @@ impl DayFifteen {
         (factory, moves)
     }
 
-    fn execute_moves(factory: &mut Grid<Object>, moves: &[Direction]) -> u32 {
-        // todo
-        (factory.top_left.x + moves.len() as i64) as u32
+    fn score_factory(factory: &Grid<Object>) -> i64 {
+        factory
+            .iter()
+            .filter(|(_, object)| **object == Object::Box)
+            .map(|(position, _)| position.x + position.y * 100)
+            .sum()
+    }
+
+    fn execute_move(_factory: &mut Grid<Object>, _direction: &Direction) {}
+
+    fn execute_moves(factory: &mut Grid<Object>, moves: &[Direction]) -> i64 {
+        moves
+            .iter()
+            .for_each(|direction| Self::execute_move(factory, direction));
+        DayFifteen::score_factory(factory)
     }
 }
 
