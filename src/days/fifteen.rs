@@ -1,7 +1,8 @@
 use crate::days::Day;
 use crate::utils::{Coord, Direction, Grid};
+use std::fmt::{Debug, Formatter};
 
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Eq, PartialEq, Hash, Clone, Copy)]
 enum Object {
     Robot,
     Box,
@@ -20,11 +21,22 @@ impl Object {
     }
 }
 
+impl Debug for Object {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Object::Empty => write!(f, "."),
+            Object::Wall => write!(f, "#"),
+            Object::Box => write!(f, "O"),
+            Object::Robot => write!(f, "@"),
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct DayFifteen {}
 
 impl DayFifteen {
-    fn parse_factory(input: &str) -> (Coord, Grid<Object>, Vec<Direction>) {
+    fn parse_factory(input: &str, width: u8) -> (Coord, Grid<Object>, Vec<Direction>) {
         let (factory_input, moves_input) = input.split_once("\n\n").unwrap();
 
         let factory =
@@ -33,7 +45,21 @@ impl DayFifteen {
                 .enumerate()
                 .fold(Grid::new(), |mut factory, (y, line)| {
                     line.chars().enumerate().for_each(|(x, letter)| {
-                        factory.set(Coord::new(x as i64, y as i64), Object::new(&letter));
+                        let new_x = x * width as usize;
+                        factory.set(Coord::new(new_x as i64, y as i64), Object::new(&letter));
+                        for offset in 1..width {
+                            if letter == '@' {
+                                factory.set(
+                                    Coord::new((new_x + offset as usize) as i64, y as i64),
+                                    Object::Empty,
+                                );
+                            } else {
+                                factory.set(
+                                    Coord::new((new_x + offset as usize) as i64, y as i64),
+                                    Object::new(&letter),
+                                );
+                            }
+                        }
                     });
                     factory
                 });
@@ -115,11 +141,14 @@ impl DayFifteen {
 
 impl Day for DayFifteen {
     fn part_one(&self, input: &str) -> String {
-        let (robot, mut factory, moves) = DayFifteen::parse_factory(input);
+        let (robot, mut factory, moves) = DayFifteen::parse_factory(input, 1);
+        println!("{factory:?}");
         DayFifteen::execute_moves(&robot, &mut factory, &moves).to_string()
     }
 
     fn part_two(&self, input: &str) -> String {
+        let (_robot, factory, _moves) = DayFifteen::parse_factory(input, 2);
+        println!("{factory:?}");
         input.to_string()
     }
 }
@@ -178,7 +207,33 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"#,
     #[test]
     fn test_part_two() {
         let day = DayFifteen::default();
-        let cases = vec![("", 0)];
+        let cases = vec![
+            (
+                r#"#######
+#...#.#
+#.....#
+#..OO@#
+#..O..#
+#.....#
+#######
+
+<vv<<^^<<^^"#,
+                618,
+            ),
+            (
+                r#"########
+#..O.O.#
+##@.O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+<^^>>>vv<v>>v<<"#,
+                9021,
+            ),
+        ];
         for (input, expected) in cases {
             assert_eq!(day.part_two(input), expected.to_string())
         }

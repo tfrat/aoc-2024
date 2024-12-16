@@ -1,6 +1,7 @@
 use crossterm::terminal::ClearType;
 use crossterm::{cursor, terminal, ExecutableCommand};
 use std::collections::HashMap;
+use std::fmt::{Debug, Formatter};
 use std::io::{stdout, IsTerminal, Write};
 use std::thread::sleep;
 use std::time::Duration;
@@ -67,13 +68,21 @@ impl<T> Grid<T> {
         }
     }
 
+    pub fn width(&self) -> i64 {
+        (self.top_left.x - self.bottom_right.x).abs()
+    }
+
+    pub fn height(&self) -> i64 {
+        (self.top_left.y - self.bottom_right.y).abs()
+    }
+
     pub fn set(&mut self, coord: Coord, value: T) {
         self.grid.insert(coord, value);
-        self.top_left = Coord::new(self.top_left.x.max(coord.x), self.top_left.y.max(coord.y));
         self.bottom_right = Coord::new(
-            self.bottom_right.x.min(coord.x),
-            self.bottom_right.y.min(coord.y),
+            self.bottom_right.x.max(coord.x),
+            self.bottom_right.y.max(coord.y),
         );
+        self.top_left = Coord::new(self.top_left.x.min(coord.x), self.top_left.y.min(coord.y));
     }
 
     pub fn get(&self, coord: &Coord) -> Option<&T> {
@@ -82,6 +91,28 @@ impl<T> Grid<T> {
 
     pub fn iter(&self) -> impl Iterator<Item = (&Coord, &T)> {
         self.grid.iter()
+    }
+}
+
+impl<T> Debug for Grid<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let result = (0..=self.width())
+            .map(|y| {
+                let line = (0..=self.height())
+                    .map(|x| {
+                        self.get(&Coord { x, y })
+                            .map(|value| format!("{:?}", value))
+                            .unwrap_or(" ".to_string())
+                    })
+                    .collect::<String>();
+                line + "\n"
+            })
+            .collect::<String>();
+
+        write!(f, "{}", result)
     }
 }
 
